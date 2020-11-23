@@ -27,12 +27,17 @@ canvas.addEventListener('mouseup', function () {
 })
 
 //Player
+const playerLeft = new Image()
+playerLeft.src = 'fish_swim_left.png'
+const playerRight = new Image()
+playerRight.src = 'fish_swim_right.png'
+
 class Player {
     constructor() {
         this.x = canvas.width / 2
         this.y = canvas.height / 2
         this.radius = 50
-        this.angle = 0
+        this.angle = 20
         this.frameX = 0
         this.frameY = 0
         this.frame = 0
@@ -43,6 +48,9 @@ class Player {
     update() {
         const dx = this.x - mouse.x
         const dy = this.y - mouse.y
+        let theta = Math.atan2(dy, dx)
+        this.angle = theta
+
         if (mouse.x != this.x) {
             this.x -= dx / 30
         }
@@ -60,9 +68,42 @@ class Player {
         }
         ctx.fillStyle = 'red'
         ctx.beginPath()
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
+        //ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
         ctx.fill()
         ctx.closePath()
+        ctx.fillRect(this.x, this.y, this.radius, 10)
+
+        ctx.save()
+        ctx.translate(this.x, this.y)
+        ctx.rotate(this.angle)
+
+        if (this.x >= mouse.x) {
+            ctx.drawImage(
+                playerLeft,
+                this.frameX * this.spriteWidth,
+                this.frameY * this.spriteHeight,
+                this.spriteWidth,
+                this.spriteHeight,
+                -60,
+                -45,
+                this.spriteWidth / 4,
+                this.spriteHeight / 4
+            )
+        } else {
+            ctx.drawImage(
+                playerRight,
+                this.frameX * this.spriteWidth,
+                this.frameY * this.spriteHeight,
+                this.spriteWidth,
+                this.spriteHeight,
+                -60,
+                -45,
+                this.spriteWidth / 4,
+                this.spriteHeight / 4
+            )
+        }
+
+        ctx.restore()
     }
 }
 
@@ -78,7 +119,7 @@ class Bubble {
         this.speed = Math.random() * 5 + 1
         this.distance
         this.counter = false
-        this.sound
+        this.sound = Math.random() <= 0.5 ? 'sound1' : 'sound2'
     }
     update() {
         this.y -= this.speed
@@ -97,6 +138,11 @@ class Bubble {
     }
 }
 
+const bubblePop1 = document.createElement('audio')
+const bubblePop2 = document.createElement('audio')
+bubblePop1.src = 'pop1.ogg'
+bubblePop2.src = 'pop2.ogg'
+
 function handleBubbles() {
     if (gameFrame % 50 == 0) {
         bubblesArray.push(new Bubble())
@@ -112,12 +158,21 @@ function handleBubbles() {
         if (bubblesArray[i].y < 0 - bubblesArray[i].radius * 2) {
             bubblesArray.splice(i, 1)
         }
-        if (bubblesArray[i].distance < bubblesArray[i].radius + player.radius) {
-            if (!bubblesArray[i].counted) {
-                console.log('collision')
-                bubblesArray[i].counted = true
-                bubblesArray.splice(i, 1)
-                score++
+        if (bubblesArray[i]) {
+            if (
+                bubblesArray[i].distance <
+                bubblesArray[i].radius + player.radius
+            ) {
+                if (!bubblesArray[i].counted) {
+                    if (bubblesArray[i].sound == 'sound1') {
+                        bubblePop1.play()
+                    } else {
+                        bubblePop2.play()
+                    }
+                    bubblesArray[i].counted = true
+                    bubblesArray.splice(i, 1)
+                    score++
+                }
             }
         }
     }
