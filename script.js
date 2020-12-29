@@ -8,6 +8,7 @@ let score = 0
 let gameFrame = 0
 ctx.font = '50px Georgia'
 let gameSpeed = 1
+let gameOver = false
 
 //Mouse Interactivity
 let canvasPosition = canvas.getBoundingClientRect()
@@ -67,12 +68,12 @@ class Player {
             ctx.lineTo(mouse.x, mouse.y)
             ctx.stroke()
         }
-        ctx.fillStyle = 'red'
-        ctx.beginPath()
-        //ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
-        ctx.fill()
-        ctx.closePath()
-        ctx.fillRect(this.x, this.y, this.radius, 10)
+        // ctx.fillStyle = 'red'
+        // ctx.beginPath()
+        // ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
+        // ctx.fill()
+        // ctx.closePath()
+        // ctx.fillRect(this.x, this.y, this.radius, 10)
 
         ctx.save()
         ctx.translate(this.x, this.y)
@@ -133,8 +134,8 @@ class Bubble {
     }
 
     draw() {
-        ctx.fillStyle = 'blue'
-        ctx.beginPath()
+        //ctx.fillStyle = 'blue'
+        //ctx.beginPath()
         //ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
         //ctx.fill()
         ctx.closePath()
@@ -213,7 +214,7 @@ enemyImage.src = 'enemy1.png'
 
 class Enemy {
     constructor() {
-        this.x = canvas.width - 200
+        this.x = canvas.width + 200
         this.y = Math.random() * (canvas.height - 150) + 90
         this.radius = 60
         this.speed = Math.random() * 2 + 2
@@ -224,10 +225,10 @@ class Enemy {
         this.spriteHeight = 397
     }
     draw() {
-        ctx.fillStyle = 'red'
-        ctx.beginPath()
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
-        ctx.fill()
+        // ctx.fillStyle = 'red'
+        // ctx.beginPath()
+        // ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
+        // ctx.fill()
         ctx.drawImage(
             enemyImage,
             this.frameX * this.spriteWidth,
@@ -260,13 +261,25 @@ class Enemy {
             else if (this.frame < 11) this.frameY = 2
             else this.frameY = 0
         }
+        const dx = this.x - player.x
+        const dy = this.y - player.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+        if (distance < this.radius + player.radius) {
+            handleGameOver()
+        }
     }
 }
 
 const enemy1 = new Enemy()
 function handleEnemies() {
-    enemy1.update()
     enemy1.draw()
+    enemy1.update()
+}
+
+function handleGameOver() {
+    ctx.fillStyle = 'white'
+    ctx.fillText('GAME OVER, you reached score ' + score, 110, 250)
+    gameOver = true
 }
 
 //animation loop
@@ -280,7 +293,7 @@ function animate() {
     ctx.fillStyle = 'black'
     ctx.fillText('score: ' + score, 10, 50)
     gameFrame++
-    requestAnimationFrame(animate)
+    if (!gameOver) requestAnimationFrame(animate)
 }
 
 animate()
